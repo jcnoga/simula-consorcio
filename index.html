@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Consórcio Inteligente</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #27ae60;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --text: #333;
+            --border: #ddd;
+            --input-bg: #eaf6ff;
+            --input-border: #b3d4fc;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1300px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        h1 {
+            grid-column: 1 / -1;
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-weight: 300;
+        }
+
+        /* Card Styles */
+        .card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .card.full-width-card {
+            grid-column: 1 / -1;
+        }
+
+        h2 {
+            color: var(--primary);
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 10px;
+            margin-top: 0;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Form Styles */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--input-border);
+            border-radius: 6px;
+            font-size: 1rem;
+            box-sizing: border-box; 
+            transition: all 0.3s;
+            background-color: var(--input-bg);
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
+        }
+
+        input[readonly], input:disabled {
+            background-color: #e9ecef;
+            color: #777;
+            cursor: not-allowed;
+            border-color: #ccc;
+            box-shadow: none;
+        }
+
+        /* Área do Checkbox e Input de Porcentagem */
+        .checkbox-wrapper {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            background-color: #fff3cd;
+            padding: 12px 15px;
+            border-radius: 6px;
+            border: 1px solid #ffeeba;
+            margin-bottom: 10px;
+        }
+
+        .checkbox-wrapper input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+            cursor: pointer;
+            transform: scale(1.3);
+        }
+
+        .checkbox-wrapper label {
+            margin-bottom: 0;
+            cursor: pointer;
+            color: #856404;
+            font-size: 0.95rem;
+        }
+
+        .target-input {
+            width: 80px !important;
+            padding: 5px 10px !important;
+            text-align: center;
+            border: 1px solid #e0c46c !important; 
+            background-color: #fff !important;
+            font-weight: bold;
+            color: #856404;
+        }
+        
+        .target-input:disabled {
+            background-color: #e9ecef !important;
+            border-color: #ccc !important;
+            color: #999;
+        }
+
+        .calc-btn {
+            grid-column: 1 / -1;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.1s;
+            margin-top: 10px;
+        }
+
+        .calc-btn:hover {
+            background-color: #34495e;
+            transform: translateY(-2px);
+        }
+
+        /* Results Styles */
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-size: 0.95rem;
+            color: #666;
+        }
+
+        .result-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .highlight-green {
+            color: var(--accent);
+            font-size: 1.4rem;
+        }
+
+        .highlight-blue {
+            color: #2980b9;
+        }
+        
+        .reference-val {
+            color: #7f8c8d;
+        }
+
+        .explanation {
+            font-size: 0.85rem;
+            color: #888;
+            margin-top: 5px;
+            display: block;
+        }
+
+        /* TABLE STYLES */
+        .table-container {
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem; 
+        }
+
+        th, td {
+            padding: 10px 8px;
+            text-align: right;
+            border-bottom: 1px solid #eee;
+            white-space: nowrap;
+        }
+
+        th:first-child, td:first-child {
+            text-align: center;
+        }
+
+        th {
+            background-color: var(--primary);
+            color: white;
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        tr.contemplacao-row {
+            background-color: #fff3cd !important;
+            border-left: 4px solid #ffc107;
+        }
+
+        tr.contemplacao-row td {
+            color: #856404;
+            font-weight: bold;
+        }
+
+        .positive-val {
+            color: green;
+        }
+
+        .negative-val {
+            color: #c0392b;
+        }
+        
+        .final-balance {
+            font-weight: bold;
+        }
+        .final-balance.neg {
+            color: #c0392b;
+        }
+        .final-balance.pos {
+            color: var(--primary);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Simulador Financeiro de Consórcio</h1>
+
+    <!-- Coluna da Esquerda: Inputs -->
+    <div class="card">
+        <h2>Parâmetros da Simulação</h2>
+        <div class="form-grid">
+            
+            <!-- CAMPOS REPOSICIONADOS NO TOPO -->
+            <div class="form-group">
+                <label>Aplicação Inicial (R$)</label>
+                <input type="number" id="valorAplicado" value="35000">
+            </div>
+
+            <div class="form-group">
+                <label>Rendimento Aplicação (% a.m.)</label>
+                <input type="number" id="rendimentoMensal" value="0.8" step="0.01">
+            </div>
+
+            <!-- DEMAIS CAMPOS -->
+            <div class="form-group full-width">
+                <label>Valor da Carta de Crédito (R$)</label>
+                <input type="number" id="valorCarta" value="75000" oninput="atualizarDadosEntrada()">
+            </div>
+
+            <div class="form-group">
+                <label>Taxa de Adm. Total (%)</label>
+                <input type="number" id="taxaAdmin" value="23.4" step="0.1">
+            </div>
+
+            <div class="form-group">
+                <label>Prazo Total (meses)</label>
+                <input type="number" id="prazoTotal" value="76">
+            </div>
+
+            <!-- Seção de Contemplação -->
+            <div class="form-group">
+                <label>Mês da Contemplação</label>
+                <input type="number" id="mesContemplacao" value="1">
+            </div>
+
+            <div class="form-group">
+                <label>Desc. Parcela Inicial (%)</label>
+                <input type="number" id="pctDesconto" value="30" placeholder="Ex: 50 (Meia parcela)">
+            </div>
+
+            <!-- Checkbox de Automação -->
+            <div class="checkbox-wrapper">
+                <input type="checkbox" id="chkAutoLance" onchange="toggleAutoLance()">
+                <label for="chkAutoLance">Ajustar Lance Livre para atingir:</label>
+                <input type="number" id="targetPercent" class="target-input" value="60" min="1" max="100" step="1" oninput="atualizarDadosEntrada()" disabled>
+                <label for="chkAutoLance" style="cursor: pointer;">% do total</label>
+            </div>
+
+            <!-- Lances -->
+            <div class="form-group">
+                <label>Lance Livre (R$)</label>
+                <input type="number" id="lanceLivre" value="30000">
+            </div>
+
+            <div class="form-group">
+                <label>% Lance Embutido</label>
+                <input type="number" id="pctLanceEmbutido" value="20" step="1" oninput="atualizarDadosEntrada()">
+            </div>
+
+            <div class="form-group full-width">
+                <label>Valor Lance Embutido (Calculado)</label>
+                <input type="text" id="valorLanceEmbutidoDisplay" readonly value="R$ 15.000,00">
+            </div>
+            
+            <!-- Campo de Rendimento do Automóvel (Extras) -->
+            <div class="form-group full-width">
+                <label>Rendimento Mensal do Automóvel (R$)</label>
+                <input type="number" id="rendimentoCarro" value="0" placeholder="Ex: Renda de aplicativo ou aluguel">
+                <span class="explanation" style="font-size: 0.75rem;">Válido a partir do mês seguinte à contemplação.</span>
+            </div>
+
+            <button class="calc-btn" onclick="calcular()">CALCULAR SIMULAÇÃO</button>
+        </div>
+    </div>
+
+    <!-- Coluna da Direita: Resultados -->
+    <div class="card" id="resultados">
+        <h2>Resultados Financeiros</h2>
+        
+        <div class="result-item">
+            <div>
+                <span class="result-label">Valor Líquido Liberado</span>
+                <span class="explanation">Carta de crédito (-) Lance Embutido</span>
+            </div>
+            <span class="result-value highlight-green" id="resValorLiberado">R$ 0,00</span>
+        </div>
+
+        <div class="result-item">
+            <div>
+                <span class="result-label">Prestação Mensal Normal</span>
+                <span class="explanation">Valor integral s/ descontos (Referência)</span>
+            </div>
+            <span class="result-value reference-val" id="resPrestacaoNormal">R$ 0,00</span>
+        </div>
+
+        <div class="result-item">
+            <div>
+                <span class="result-label">Prestação Mensal (Antes)</span>
+                <span class="explanation">Até a contemplação (c/ desconto aplicado)</span>
+            </div>
+            <span class="result-value" id="resPrestacaoAntes">R$ 0,00</span>
+        </div>
+
+        <div class="result-item">
+            <div>
+                <span class="result-label">Prestação Mensal (Após)</span>
+                <span class="explanation">Recalculada após amortização dos lances</span>
+            </div>
+            <span class="result-value highlight-blue" id="resPrestacaoApos">R$ 0,00</span>
+        </div>
+
+        <div class="result-item">
+            <div>
+                <span class="result-label">Total de Lances Ofertados</span>
+                <span class="explanation">Lance Livre + Lance Embutido</span>
+            </div>
+            <span class="result-value" id="resTotalLances">R$ 0,00</span>
+        </div>
+
+        <hr style="border: 0; border-top: 1px dashed #ddd; margin: 20px 0;">
+
+        <div class="result-item">
+            <div>
+                <span class="result-label">Saldo da Aplicação (na Contemplação)</span>
+                <span class="explanation">Saldo exato após pagamento do Lance Livre</span>
+            </div>
+            <span class="result-value" id="resValorAplicacao">R$ 0,00</span>
+        </div>
+    </div>
+
+    <!-- Grid de Evolução (Largura Total) -->
+    <div class="card full-width-card">
+        <h2>Evolução Mensal da Aplicação (Fluxo de Caixa)</h2>
+        <p class="explanation" style="margin-bottom: 15px;">
+            Acompanhe a evolução mês a mês. O <strong>Lance Livre</strong> é deduzido do saldo no mês da contemplação. 
+            O <strong>Rendimento do Automóvel</strong> é somado a partir do mês seguinte.
+        </p>
+        
+        <div class="table-container">
+            <table id="tabelaEvolucao">
+                <thead>
+                    <tr>
+                        <th>Mês</th>
+                        <th>Saldo Inicial</th>
+                        <th>Rend. Aplic. (+)</th>
+                        <th>Rend. Carro (+)</th>
+                        <th>Pag. Parcela (-)</th>
+                        <th>Lance Livre (-)</th>
+                        <th>Saldo Final</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Linhas geradas via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Função auxiliar para formatar moeda
+    const formatarMoeda = (valor) => {
+        return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    };
+
+    function atualizarDadosEntrada() {
+        const carta = parseFloat(document.getElementById('valorCarta').value) || 0;
+        const pctEmbutido = parseFloat(document.getElementById('pctLanceEmbutido').value) || 0;
+        
+        // 1. Atualiza visualização Lance Embutido
+        const valorEmbutido = carta * (pctEmbutido / 100);
+        document.getElementById('valorLanceEmbutidoDisplay').value = formatarMoeda(valorEmbutido);
+
+        // 2. Lógica Automática
+        const chkAuto = document.getElementById('chkAutoLance');
+        if (chkAuto.checked) {
+            let pctAlvo = parseFloat(document.getElementById('targetPercent').value);
+            if (isNaN(pctAlvo)) pctAlvo = 60; 
+
+            const metaTotal = carta * (pctAlvo / 100);
+            let novoLanceLivre = metaTotal - valorEmbutido;
+            if (novoLanceLivre < 0) novoLanceLivre = 0;
+            
+            document.getElementById('lanceLivre').value = novoLanceLivre.toFixed(0); 
+        }
+    }
+
+    function toggleAutoLance() {
+        const chk = document.getElementById('chkAutoLance');
+        const inputLivre = document.getElementById('lanceLivre');
+        const inputTarget = document.getElementById('targetPercent');
+
+        if (chk.checked) {
+            inputLivre.readOnly = true;
+            inputTarget.disabled = false;
+            if (!inputTarget.value) inputTarget.value = 60;
+            atualizarDadosEntrada(); 
+        } else {
+            inputLivre.readOnly = false;
+            inputTarget.disabled = true;
+        }
+    }
+
+    function calcular() {
+        // --- 1. Obter Valores ---
+        const valorAplicado = parseFloat(document.getElementById('valorAplicado').value) || 0;
+        const rendimentoMensal = parseFloat(document.getElementById('rendimentoMensal').value) || 0;
+        const valorCarta = parseFloat(document.getElementById('valorCarta').value) || 0;
+        const taxaAdmin = parseFloat(document.getElementById('taxaAdmin').value) || 0;
+        const prazoTotal = parseInt(document.getElementById('prazoTotal').value) || 1;
+        
+        const mesContemplacao = parseInt(document.getElementById('mesContemplacao').value) || 1;
+        const pctDesconto = parseFloat(document.getElementById('pctDesconto').value) || 0;
+        
+        const lanceLivre = parseFloat(document.getElementById('lanceLivre').value) || 0;
+        const pctLanceEmbutido = parseFloat(document.getElementById('pctLanceEmbutido').value) || 0;
+        
+        const rendimentoCarro = parseFloat(document.getElementById('rendimentoCarro').value) || 0;
+
+        // Validações
+        if (mesContemplacao > prazoTotal) {
+            alert("O mês de contemplação não pode ser maior que o prazo total.");
+            return;
+        }
+
+        // --- 2. Cálculos Consórcio ---
+        const dividaTotalInicial = valorCarta + (valorCarta * (taxaAdmin / 100));
+        const parcelaCheia = dividaTotalInicial / prazoTotal;
+        const parcelaAntes = parcelaCheia * (1 - (pctDesconto / 100));
+
+        const valorLanceEmbutido = valorCarta * (pctLanceEmbutido / 100);
+        const totalLances = lanceLivre + valorLanceEmbutido;
+
+        // --- 3. Pós-Contemplação ---
+        const valorPagoAteMomento = parcelaAntes * mesContemplacao;
+        let saldoDevedorAtual = dividaTotalInicial - valorPagoAteMomento;
+        let saldoDevedorPosLances = saldoDevedorAtual - totalLances;
+        if (saldoDevedorPosLances < 0) saldoDevedorPosLances = 0;
+
+        const mesesRestantes = prazoTotal - mesContemplacao;
+        let parcelaApos = 0;
+        if (mesesRestantes > 0) {
+            parcelaApos = saldoDevedorPosLances / mesesRestantes;
+        }
+
+        const valorLiberado = valorCarta - valorLanceEmbutido;
+
+        // --- 4. Exibir Resultados (Cards) ---
+        document.getElementById('resValorLiberado').innerText = formatarMoeda(valorLiberado);
+        document.getElementById('resPrestacaoNormal').innerText = formatarMoeda(parcelaCheia);
+        document.getElementById('resPrestacaoAntes').innerText = formatarMoeda(parcelaAntes);
+        document.getElementById('resPrestacaoApos').innerText = formatarMoeda(parcelaApos);
+        document.getElementById('resTotalLances').innerText = formatarMoeda(totalLances);
+        document.getElementById('valorLanceEmbutidoDisplay').value = formatarMoeda(valorLanceEmbutido);
+
+        // --- 5. Gerar Grid de Evolução (Tabela) ---
+        let saldoInvestimento = valorAplicado;
+        const taxaJurosDecimal = rendimentoMensal / 100;
+        let tableHTML = "";
+        let saldoSnapshotContemplacao = 0; 
+
+        // Loop do mês 1 até o final do prazo
+        for (let i = 1; i <= prazoTotal; i++) {
+            
+            let saldoInicial = saldoInvestimento;
+            let rendimentoApp = saldoInicial * taxaJurosDecimal;
+            
+            // Variáveis de fluxo do mês
+            let pagamentoParcela = 0;
+            let pagamentoLance = 0;
+            let entradaCarro = 0;
+            
+            let rowClass = "";
+            let observacao = "";
+
+            // Lógica Antes vs Depois da Contemplação
+            if (i <= mesContemplacao) {
+                pagamentoParcela = parcelaAntes;
+                
+                if (i === mesContemplacao) {
+                    rowClass = "contemplacao-row";
+                    observacao = " (Contemplação)";
+                    pagamentoLance = lanceLivre;
+                }
+            } else {
+                pagamentoParcela = parcelaApos;
+                entradaCarro = rendimentoCarro;
+            }
+
+            // Cálculo do Saldo Final
+            saldoInvestimento = saldoInicial + rendimentoApp + entradaCarro - pagamentoParcela - pagamentoLance;
+
+            // Snapshot para o card de resumo (após pagar o lance)
+            if (i === mesContemplacao) {
+                saldoSnapshotContemplacao = saldoInvestimento;
+            }
+
+            // Formatação Visual
+            const styleSaldoFinal = saldoInvestimento < 0 ? 'neg' : 'pos';
+            const displayLance = pagamentoLance > 0 ? formatarMoeda(pagamentoLance) : "-";
+            const displayCarro = entradaCarro > 0 ? formatarMoeda(entradaCarro) : "-";
+            const styleCarro = entradaCarro > 0 ? 'class="positive-val"' : '';
+            const styleLance = pagamentoLance > 0 ? 'class="negative-val" style="font-weight:bold;"' : '';
+
+            tableHTML += `
+                <tr class="${rowClass}">
+                    <td>${i} ${observacao}</td>
+                    <td>${formatarMoeda(saldoInicial)}</td>
+                    <td class="positive-val">+ ${formatarMoeda(rendimentoApp)}</td>
+                    <td ${styleCarro}>${entradaCarro > 0 ? '+' : ''} ${displayCarro}</td>
+                    <td class="negative-val">- ${formatarMoeda(pagamentoParcela)}</td>
+                    <td ${styleLance}>${pagamentoLance > 0 ? '-' : ''} ${displayLance}</td>
+                    <td class="final-balance ${styleSaldoFinal}">${formatarMoeda(saldoInvestimento)}</td>
+                </tr>
+            `;
+        }
+
+        document.querySelector('#tabelaEvolucao tbody').innerHTML = tableHTML;
+
+        // Atualiza o card de resumo com o saldo FINAL NO MÊS DA CONTEMPLAÇÃO (Pós Lance)
+        const elApp = document.getElementById('resValorAplicacao');
+        elApp.innerText = formatarMoeda(saldoSnapshotContemplacao);
+        if (saldoSnapshotContemplacao < 0) elApp.style.color = "#c0392b";
+        else elApp.style.color = "#2c3e50";
+    }
+    
+    // Inicialização
+    atualizarDadosEntrada();
+</script>
+
+</body>
+</html>
