@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Consórcio Inteligente</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    <div class="header-section">
+        <h1>Simulador Financeiro de Consórcio</h1>
+        
+        <div class="type-selector">
+            <button class="type-btn active" onclick="setConsortiumType('veiculo')">🚗 Veículos</button>
+            <button class="type-btn" onclick="setConsortiumType('imovel')">🏠 Imóveis</button>
+            <button class="type-btn" onclick="setConsortiumType('equipamento')">🚜 Equipamentos / Comercial</button>
+        </div>
+    </div>
+
+    <!-- Coluna da Esquerda: Inputs -->
+    <div class="card">
+        <h2 id="tituloParametros">Parâmetros (Veículos)</h2>
+        <div class="form-grid">
+            
+            <div class="form-group">
+                <label>Aplicação Inicial (R$)</label>
+                <input type="number" id="valorAplicado" value="35000">
+            </div>
+
+            <div class="form-group">
+                <label>Rendimento Aplicação (% a.m.)</label>
+                <input type="number" id="rendimentoMensal" value="0.8" step="0.01">
+            </div>
+
+            <div class="form-group full-width">
+                <label>Valor da Carta de Crédito (R$)</label>
+                <input type="number" id="valorCarta" value="75000" oninput="atualizarDadosEntrada()">
+            </div>
+
+            <div class="form-group">
+                <label>Taxa de Adm. Total (%)</label>
+                <input type="number" id="taxaAdmin" value="23.4" step="0.1">
+            </div>
+
+            <div class="form-group">
+                <label>Prazo Total (meses)</label>
+                <input type="number" id="prazoTotal" value="76">
+            </div>
+
+            <!-- NOVO CAMPO: Reajuste INCC -->
+            <div class="form-group">
+                <label class="tooltip-container">
+                    Reajuste Anual (% a.a.) ℹ️
+                    <span class="tooltip-text">O INCC/IPCA corrige o valor da carta e das parcelas a cada 12 meses.</span>
+                </label>
+                <input type="number" id="taxaReajuste" value="6.0" step="0.1" max="20" min="0">
+                <span class="error-msg" id="erroReajuste"></span>
+            </div>
+
+            <div class="form-group">
+                <label>Mês da Contemplação</label>
+                <input type="number" id="mesContemplacao" value="1">
+            </div>
+
+            <div class="form-group">
+                <label>Desc. Parcela Inicial (%)</label>
+                <input type="number" id="pctDesconto" value="30" placeholder="Ex: 50">
+            </div>
+
+            <!-- Checkbox de Automação -->
+            <div class="checkbox-wrapper">
+                <input type="checkbox" id="chkAutoLance" onchange="toggleAutoLance()">
+                <label for="chkAutoLance">Ajustar Lance Livre para atingir:</label>
+                <input type="number" id="targetPercent" class="target-input" value="60" min="1" max="100" step="1" oninput="atualizarDadosEntrada()" disabled>
+                <label for="chkAutoLance" style="cursor: pointer;">% do total</label>
+            </div>
+
+            <div class="form-group">
+                <label>Lance Livre (R$)</label>
+                <input type="number" id="lanceLivre" value="30000">
+            </div>
+
+            <div class="form-group">
+                <label>% Lance Embutido</label>
+                <input type="number" id="pctLanceEmbutido" value="20" step="1" oninput="atualizarDadosEntrada()">
+            </div>
+
+            <div class="form-group full-width">
+                <label>Valor Lance Embutido (Calculado)</label>
+                <input type="text" id="valorLanceEmbutidoDisplay" readonly value="R$ 15.000,00">
+            </div>
+            
+            <div class="form-group full-width">
+                <label id="labelRendimentoExtra">Rendimento Mensal do Automóvel (R$)</label>
+                <input type="number" id="rendimentoCarro" value="0">
+                <span class="explanation" id="explRendimentoExtra">Válido a partir do mês seguinte à contemplação.</span>
+            </div>
+
+            <div class="disclaimer-box">
+                ⚠️ Valores estimados para simulação. O reajuste real depende do índice oficial (INCC/IPCA) aplicado pela administradora na data de aniversário do grupo.
+            </div>
+
+            <button class="calc-btn" onclick="calcular()">CALCULAR SIMULAÇÃO</button>
+        </div>
+    </div>
+
+    <!-- Coluna da Direita: Resultados -->
+    <div class="card" id="resultados">
+        <h2>Resultados Financeiros</h2>
+        
+        <div class="result-item">
+            <div>
+                <span class="result-label">Valor Líquido Liberado</span>
+                <span class="explanation">Carta de crédito (-) Lance Embutido</span>
+            </div>
+            <span class="result-value highlight-green" id="resValorLiberado">R$ 0,00</span>
+        </div>
+
+        <div class="result-item">
+            <div>
+                <span class="result-label">Prestação Mensal Inicial</span>
+                <span class="explanation">Valor base (sem reajuste anual)</span>
+            </div>
+            <span class="result-value reference-val" id="resPrestacaoNormal">R$ 0,00</span>
+        </div>
+
+        <div class="result-item">
+            <div>
+                <span class="result-label">Prestação (Até Contemplação)</span>
+                <span class="explanation">Com desconto inicial aplicado</span>
+            </div>
+            <span class="result-value" id="resPrestacaoAntes">R$ 0,00</span>
+        </div>
+
+        <div class="result-item">
+            <div>
+                <span class="result-label">Prestação (Pós Contemplação)</span>
+                <span class="explanation">Recalculada após amortização</span>
+            </div>
+            <span class="result-value highlight-blue" id="resPrestacaoApos">R$ 0,00</span>
+        </div>
+
+        <div class="result-item">
+            <div>
+                <span class="result-label">Total Pago (Estimado)</span>
+                <span class="explanation">Soma de todas parcelas e lances</span>
+            </div>
+            <span class="result-value" id="resTotalPago">R$ 0,00</span>
+        </div>
+
+        <hr style="border: 0; border-top: 1px dashed #ddd; margin: 20px 0;">
+
+        <div class="result-item">
+            <div>
+                <span class="result-label">Saldo da Aplicação (na Contemplação)</span>
+                <span class="explanation">Saldo exato após pagamento do Lance Livre</span>
+            </div>
+            <span class="result-value" id="resValorAplicacao">R$ 0,00</span>
+        </div>
+    </div>
+
+    <!-- Grid de Evolução -->
+    <div class="card full-width-card">
+        <h2>Evolução Mensal (Fluxo de Caixa)</h2>
+        <p class="explanation" style="margin-bottom: 15px;">
+            Acompanhe a evolução. A parcela sofre <strong>reajuste anual</strong>. O Lance Livre é deduzido na contemplação.
+        </p>
+        
+        <div class="table-container">
+            <table id="tabelaEvolucao">
+                <thead>
+                    <tr>
+                        <th>Mês</th>
+                        <th>Saldo Inicial</th>
+                        <th>Rend. Aplic. (+)</th>
+                        <th id="thRendaExtra">Rend. Carro (+)</th>
+                        <th>Pag. Parcela (-)</th>
+                        <th>Lance Livre (-)</th>
+                        <th>Saldo Final</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- JS preenche aqui -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
