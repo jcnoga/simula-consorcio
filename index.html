@@ -3,192 +3,675 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador de Consórcio Inteligente</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Simulador Financeiro de Consórcio</title>
+    <style>
+        :root {
+            --primary: #2c3e50;      /* Azul Escuro (Botão e Títulos) */
+            --accent: #27ae60;       /* Verde (Detalhes e Valores Positivos) */
+            --bg-body: #f4f7f6;      /* Fundo da Página */
+            --bg-card: #ffffff;      /* Fundo dos Cards */
+            --input-bg: #eaf6ff;     /* Fundo Azul Claro dos Inputs (Igual imagem) */
+            --input-border: #b3d4fc; /* Borda Azul Clara */
+            --text-main: #333333;
+            --text-muted: #7f8c8d;
+            --highlight-box: #fff3cd; /* Amarelo do box de lance automático */
+            --highlight-border: #ffeeba;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            color: var(--text-muted);
+            font-weight: 300;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        /* Tabs de Seleção (Mantidas funcionais, mas discretas) */
+        .type-selector {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .type-btn {
+            background: #e0e0e0;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #555;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+        
+        .type-btn.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        /* Layout Principal */
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        /* Estilo dos Cards (Igual imagem) */
+        .card {
+            background: var(--bg-card);
+            padding: 25px;
+            border-radius: 8px; /* Bordas levemente arredondadas */
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .card.full-width {
+            grid-column: 1 / -1;
+            margin-top: 20px;
+        }
+
+        /* Títulos com sublinhado verde */
+        h2 {
+            color: var(--primary);
+            font-size: 1rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--accent); /* O traço verde */
+        }
+
+        /* Formulários */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Duas colunas */
+            gap: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 5px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #444;
+        }
+
+        /* Inputs Azul Claro (Igual imagem) */
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--input-border);
+            background-color: var(--input-bg);
+            border-radius: 4px;
+            font-size: 0.95rem;
+            color: var(--primary);
+            font-weight: 500;
+            outline: none;
+            transition: border 0.3s;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+            background-color: #fff;
+        }
+
+        input:disabled, input[readonly] {
+            background-color: #e2e6ea;
+            color: #888;
+            cursor: not-allowed;
+        }
+
+        /* Box Amarelo de Lance Automático */
+        .highlight-box {
+            grid-column: 1 / -1;
+            background-color: var(--highlight-box);
+            border: 1px solid var(--highlight-border);
+            border-radius: 4px;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .highlight-box label {
+            margin: 0;
+            color: #856404;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .small-input {
+            width: 70px !important;
+            padding: 5px !important;
+            text-align: center;
+            background-color: #fff !important;
+            border-color: #e0c46c !important;
+        }
+
+        /* Explicações pequenas abaixo dos inputs */
+        .helper-text {
+            font-size: 0.7rem;
+            color: #999;
+            margin-top: 3px;
+            display: block;
+        }
+
+        /* Botão Calcular */
+        .calc-btn {
+            grid-column: 1 / -1;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 1rem;
+            text-transform: uppercase;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.2s;
+        }
+
+        .calc-btn:hover {
+            background-color: #34495e;
+        }
+
+        /* Área de Resultados */
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .result-row:last-child {
+            border-bottom: none;
+        }
+
+        .res-label-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .res-label {
+            font-size: 0.9rem;
+            color: #666;
+            font-weight: 400;
+        }
+
+        .res-desc {
+            font-size: 0.75rem;
+            color: #aaa;
+            margin-top: 2px;
+        }
+
+        .res-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        /* Cores Específicas da Imagem */
+        .text-green { color: var(--accent); font-size: 1.3rem; }
+        .text-blue { color: #3498db; }
+        .text-red { color: #c0392b; }
+        
+        /* Linha pontilhada separadora */
+        .dashed-separator {
+            border: 0;
+            border-top: 1px dashed #ccc;
+            margin: 20px 0;
+        }
+
+        /* Tabela de Evolução */
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        
+        th {
+            background-color: var(--primary);
+            color: white;
+            padding: 10px;
+            text-align: center;
+        }
+        
+        td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #eee;
+            text-align: right;
+            color: #555;
+        }
+        
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        tr:hover { background-color: #f1f1f1; }
+        
+        .contemplacao-row {
+            background-color: #fff3cd !important;
+            border-left: 4px solid #ffc107;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .container { grid-template-columns: 1fr; }
+            .form-grid { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="header-section">
-        <h1>Simulador Financeiro de Consórcio</h1>
-        
-        <div class="type-selector">
-            <button class="type-btn active" onclick="setConsortiumType('veiculo')">🚗 Veículos</button>
-            <button class="type-btn" onclick="setConsortiumType('imovel')">🏠 Imóveis</button>
-            <button class="type-btn" onclick="setConsortiumType('equipamento')">🚜 Equipamentos / Comercial</button>
-        </div>
+    <h1>Simulador Financeiro de Consórcio</h1>
+
+    <!-- Mantivemos a lógica de abas, mas com visual discreto acima -->
+    <div class="type-selector">
+        <button class="type-btn active" onclick="setConsortiumType('veiculo')">Veículos</button>
+        <button class="type-btn" onclick="setConsortiumType('imovel')">Imóveis</button>
+        <button class="type-btn" onclick="setConsortiumType('equipamento')">Equipamentos</button>
     </div>
 
-    <!-- Coluna da Esquerda: Inputs -->
-    <div class="card">
-        <h2 id="tituloParametros">Parâmetros (Veículos)</h2>
-        <div class="form-grid">
+    <div class="container">
+        
+        <!-- CARD ESQUERDA: PARÂMETROS -->
+        <div class="card">
+            <h2 id="tituloParametros">PARÂMETROS DA SIMULAÇÃO</h2>
             
-            <div class="form-group">
-                <label>Aplicação Inicial (R$)</label>
-                <input type="number" id="valorAplicado" value="35000">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Aplicação Inicial (R$)</label>
+                    <input type="number" id="valorAplicado" value="35000">
+                </div>
+                
+                <div class="form-group">
+                    <label>Rendimento Aplicação (% a.m.)</label>
+                    <input type="number" id="rendimentoMensal" value="0.8" step="0.01">
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Valor da Carta de Crédito (R$)</label>
+                    <input type="number" id="valorCarta" value="75000" oninput="atualizarDadosEntrada()">
+                </div>
+
+                <div class="form-group">
+                    <label>Taxa de Adm. Total (%)</label>
+                    <input type="number" id="taxaAdmin" value="23.4" step="0.1">
+                </div>
+
+                <div class="form-group">
+                    <label>Prazo Total (meses)</label>
+                    <input type="number" id="prazoTotal" value="76">
+                </div>
+
+                <div class="form-group">
+                    <label>Mês da Contemplação</label>
+                    <input type="number" id="mesContemplacao" value="1">
+                </div>
+
+                <div class="form-group">
+                    <label>Desc. Parcela Inicial (%)</label>
+                    <input type="number" id="pctDesconto" value="30">
+                </div>
+
+                <!-- Box Amarelo (Igual imagem) -->
+                <div class="highlight-box">
+                    <input type="checkbox" id="chkAutoLance" onchange="toggleAutoLance()">
+                    <label for="chkAutoLance">Ajustar Lance Livre para atingir:</label>
+                    <input type="number" id="targetPercent" class="small-input" value="60" disabled>
+                    <label>% do total</label>
+                </div>
+
+                <div class="form-group">
+                    <label>Lance Livre (R$)</label>
+                    <input type="number" id="lanceLivre" value="30000">
+                </div>
+
+                <div class="form-group">
+                    <label>% Lance Embutido</label>
+                    <input type="number" id="pctLanceEmbutido" value="20" oninput="atualizarDadosEntrada()">
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Valor Lance Embutido (Calculado)</label>
+                    <input type="text" id="valorLanceEmbutidoDisplay" readonly>
+                </div>
+
+                <!-- Campo INCC (Funcionalidade Solicitada Anteriormente) -->
+                <div class="form-group">
+                    <label>Reajuste Anual (INCC %)</label>
+                    <input type="number" id="taxaReajuste" value="6.0" step="0.1">
+                    <span class="helper-text">Correção anual da parcela</span>
+                </div>
+
+                <div class="form-group">
+                    <label id="labelRendimentoExtra">Rendimento Automóvel (R$)</label>
+                    <input type="number" id="rendimentoCarro" value="0">
+                    <span class="helper-text" id="explRendimentoExtra">A partir do mês seguinte à contemplação</span>
+                </div>
+
+                <button class="calc-btn" onclick="calcular()">CALCULAR SIMULAÇÃO</button>
+            </div>
+        </div>
+
+        <!-- CARD DIREITA: RESULTADOS -->
+        <div class="card">
+            <h2>RESULTADOS FINANCEIROS</h2>
+
+            <div class="result-row">
+                <div class="res-label-group">
+                    <span class="res-label">Valor Líquido Liberado</span>
+                    <span class="res-desc">Carta de crédito (-) Lance Embutido</span>
+                </div>
+                <span class="res-value text-green" id="resValorLiberado">R$ 0,00</span>
             </div>
 
-            <div class="form-group">
-                <label>Rendimento Aplicação (% a.m.)</label>
-                <input type="number" id="rendimentoMensal" value="0.8" step="0.01">
+            <div class="result-row">
+                <div class="res-label-group">
+                    <span class="res-label">Prestação Mensal Normal</span>
+                    <span class="res-desc">Valor integral s/ descontos (Referência)</span>
+                </div>
+                <span class="res-value" style="color: #7f8c8d;" id="resPrestacaoNormal">R$ 0,00</span>
             </div>
 
-            <div class="form-group full-width">
-                <label>Valor da Carta de Crédito (R$)</label>
-                <input type="number" id="valorCarta" value="75000" oninput="atualizarDadosEntrada()">
+            <div class="result-row">
+                <div class="res-label-group">
+                    <span class="res-label">Prestação Mensal (Antes)</span>
+                    <span class="res-desc">Até a contemplação (c/ desconto aplicado)</span>
+                </div>
+                <span class="res-value" id="resPrestacaoAntes">R$ 0,00</span>
             </div>
 
-            <div class="form-group">
-                <label>Taxa de Adm. Total (%)</label>
-                <input type="number" id="taxaAdmin" value="23.4" step="0.1">
+            <div class="result-row">
+                <div class="res-label-group">
+                    <span class="res-label">Prestação Mensal (Após)</span>
+                    <span class="res-desc">Recalculada após amortização dos lances</span>
+                </div>
+                <span class="res-value text-blue" id="resPrestacaoApos">R$ 0,00</span>
             </div>
 
-            <div class="form-group">
-                <label>Prazo Total (meses)</label>
-                <input type="number" id="prazoTotal" value="76">
+            <div class="result-row">
+                <div class="res-label-group">
+                    <span class="res-label">Total de Lances Ofertados</span>
+                    <span class="res-desc">Lance Livre + Lance Embutido</span>
+                </div>
+                <span class="res-value" id="resTotalLances">R$ 0,00</span>
             </div>
 
-            <!-- NOVO CAMPO: Reajuste INCC -->
-            <div class="form-group">
-                <label class="tooltip-container">
-                    Reajuste Anual (% a.a.) ℹ️
-                    <span class="tooltip-text">O INCC/IPCA corrige o valor da carta e das parcelas a cada 12 meses.</span>
-                </label>
-                <input type="number" id="taxaReajuste" value="6.0" step="0.1" max="20" min="0">
-                <span class="error-msg" id="erroReajuste"></span>
+            <div class="result-row">
+                <div class="res-label-group">
+                    <span class="res-label">Total Pago Estimado</span>
+                    <span class="res-desc">Ao final do plano (c/ Reajustes)</span>
+                </div>
+                <span class="res-value" id="resTotalPago">R$ 0,00</span>
             </div>
 
-            <div class="form-group">
-                <label>Mês da Contemplação</label>
-                <input type="number" id="mesContemplacao" value="1">
-            </div>
+            <hr class="dashed-separator">
 
-            <div class="form-group">
-                <label>Desc. Parcela Inicial (%)</label>
-                <input type="number" id="pctDesconto" value="30" placeholder="Ex: 50">
+            <div class="result-row">
+                <div class="res-label-group">
+                    <span class="res-label" style="font-weight: bold;">Saldo da Aplicação (na Contemplação)</span>
+                    <span class="res-desc">Saldo exato após pagamento do Lance Livre</span>
+                </div>
+                <span class="res-value" id="resValorAplicacao">R$ 0,00</span>
             </div>
+        </div>
 
-            <!-- Checkbox de Automação -->
-            <div class="checkbox-wrapper">
-                <input type="checkbox" id="chkAutoLance" onchange="toggleAutoLance()">
-                <label for="chkAutoLance">Ajustar Lance Livre para atingir:</label>
-                <input type="number" id="targetPercent" class="target-input" value="60" min="1" max="100" step="1" oninput="atualizarDadosEntrada()" disabled>
-                <label for="chkAutoLance" style="cursor: pointer;">% do total</label>
+        <!-- CARD DE EVOLUÇÃO (TABELA) -->
+        <div class="card full-width">
+            <h2>EVOLUÇÃO MENSAL DA APLICAÇÃO (FLUXO DE CAIXA)</h2>
+            <p style="font-size: 0.85rem; color: #666; margin-bottom: 15px;">
+                Acompanhe a evolução mês a mês. O <strong>Lance Livre</strong> é deduzido do saldo no mês da contemplação.
+            </p>
+            <div class="table-container">
+                <table id="tabelaEvolucao">
+                    <thead>
+                        <tr>
+                            <th>MÊS</th>
+                            <th>SALDO INICIAL</th>
+                            <th>REND. APLIC. (+)</th>
+                            <th id="thRendaExtra">REND. CARRO (+)</th>
+                            <th>PAG. PARCELA (-)</th>
+                            <th>LANCE LIVRE (-)</th>
+                            <th>SALDO FINAL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- JS Preenche -->
+                    </tbody>
+                </table>
             </div>
+        </div>
+    </div>
 
-            <div class="form-group">
-                <label>Lance Livre (R$)</label>
-                <input type="number" id="lanceLivre" value="30000">
-            </div>
+<script>
+    // --- LÓGICA DO SIMULADOR (Mantida e Adaptada) ---
 
-            <div class="form-group">
-                <label>% Lance Embutido</label>
-                <input type="number" id="pctLanceEmbutido" value="20" step="1" oninput="atualizarDadosEntrada()">
-            </div>
+    const CONFIGS = {
+        veiculo: {
+            titulo: "PARÂMETROS DA SIMULAÇÃO (VEÍCULOS)",
+            carta: 75000, taxa: 23.4, prazo: 76,
+            rendimentoLabel: "Rendimento Automóvel (R$)",
+            explRendimento: "A partir do mês seguinte à contemplação",
+            thRenda: "REND. CARRO (+)",
+            descIni: 30, reajuste: 6.0
+        },
+        imovel: {
+            titulo: "PARÂMETROS DA SIMULAÇÃO (IMÓVEIS)",
+            carta: 400000, taxa: 24.0, prazo: 180,
+            rendimentoLabel: "Aluguel Estimado (R$)",
+            explRendimento: "Válido após entrega das chaves",
+            thRenda: "ALUGUEL (+)",
+            descIni: 0, reajuste: 6.0
+        },
+        equipamento: {
+            titulo: "PARÂMETROS DA SIMULAÇÃO (EQUIPAMENTOS)",
+            carta: 150000, taxa: 18.0, prazo: 60,
+            rendimentoLabel: "Produtividade Mensal (R$)",
+            explRendimento: "Retorno financeiro do equipamento",
+            thRenda: "LUCRO (+)",
+            descIni: 0, reajuste: 5.0
+        }
+    };
 
-            <div class="form-group full-width">
-                <label>Valor Lance Embutido (Calculado)</label>
-                <input type="text" id="valorLanceEmbutidoDisplay" readonly value="R$ 15.000,00">
-            </div>
+    const formatarMoeda = (val) => val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    const getFloat = (id) => parseFloat(document.getElementById(id).value.replace(',', '.')) || 0;
+    const getInt = (id) => parseInt(document.getElementById(id).value) || 0;
+
+    function setConsortiumType(type) {
+        const conf = CONFIGS[type];
+        document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+        // Simples seleção visual
+        const buttons = document.querySelectorAll('.type-btn');
+        if(type === 'veiculo') buttons[0].classList.add('active');
+        if(type === 'imovel') buttons[1].classList.add('active');
+        if(type === 'equipamento') buttons[2].classList.add('active');
+
+        document.getElementById('tituloParametros').innerText = conf.titulo;
+        document.getElementById('labelRendimentoExtra').innerText = conf.rendimentoLabel;
+        document.getElementById('explRendimentoExtra').innerText = conf.explRendimento;
+        document.getElementById('thRendaExtra').innerText = conf.thRenda;
+        
+        // Defaults
+        document.getElementById('valorCarta').value = conf.carta;
+        document.getElementById('taxaAdmin').value = conf.taxa;
+        document.getElementById('prazoTotal').value = conf.prazo;
+        document.getElementById('pctDesconto').value = conf.descIni;
+        document.getElementById('taxaReajuste').value = conf.reajuste;
+        document.getElementById('rendimentoCarro').value = 0;
+
+        atualizarDadosEntrada();
+        calcular();
+    }
+
+    function toggleAutoLance() {
+        const chk = document.getElementById('chkAutoLance');
+        const inputLivre = document.getElementById('lanceLivre');
+        const inputTarget = document.getElementById('targetPercent');
+        
+        if (chk.checked) {
+            inputLivre.readOnly = true;
+            inputTarget.disabled = false;
+            atualizarDadosEntrada();
+        } else {
+            inputLivre.readOnly = false;
+            inputTarget.disabled = true;
+        }
+    }
+
+    function atualizarDadosEntrada() {
+        const carta = getFloat('valorCarta');
+        const pctEmb = getFloat('pctLanceEmbutido');
+        const valEmb = carta * (pctEmb / 100);
+        document.getElementById('valorLanceEmbutidoDisplay').value = formatarMoeda(valEmb);
+
+        const chk = document.getElementById('chkAutoLance');
+        if (chk.checked) {
+            let meta = getFloat('targetPercent');
+            const metaVal = carta * (meta / 100);
+            let livre = metaVal - valEmb;
+            if(livre < 0) livre = 0;
+            document.getElementById('lanceLivre').value = livre.toFixed(0);
+        }
+    }
+
+    function calcular() {
+        const valApp = getFloat('valorAplicado');
+        const rendMes = getFloat('rendimentoMensal') / 100;
+        const carta = getFloat('valorCarta');
+        const taxaAdm = getFloat('taxaAdmin');
+        const prazo = getInt('prazoTotal');
+        const mesCont = getInt('mesContemplacao');
+        const pctDesc = getFloat('pctDesconto');
+        const lanceLiv = getFloat('lanceLivre');
+        const pctEmb = getFloat('pctLanceEmbutido');
+        const rendCarro = getFloat('rendimentoCarro');
+        const taxaReajuste = getFloat('taxaReajuste') / 100;
+
+        if (mesCont > prazo) return alert("Mês de contemplação inválido");
+
+        // Cálculos Básicos
+        const dividaTotal = carta * (1 + (taxaAdm / 100));
+        const parcCheia = dividaTotal / prazo;
+        const parcAntes = parcCheia * (1 - (pctDesc / 100));
+        const valEmb = carta * (pctEmb / 100);
+        const totalLances = lanceLiv + valEmb;
+        const valLiberado = carta - valEmb;
+
+        // Pós Contemplação
+        const pagoAteCont = parcAntes * mesCont;
+        let saldoDevedor = dividaTotal - pagoAteCont;
+        let saldoPosLance = saldoDevedor - totalLances;
+        if(saldoPosLance < 0) saldoPosLance = 0;
+        
+        const mesesRest = prazo - mesCont;
+        let parcApos = mesesRest > 0 ? saldoPosLance / mesesRest : 0;
+
+        // Evolução
+        let saldoInv = valApp;
+        let html = "";
+        let saldoContemplacao = 0;
+        let totalPagoReal = 0;
+        let fatorReajuste = 1;
+
+        for(let i=1; i<=prazo; i++) {
+            // Reajuste Anual
+            if (i > 1 && (i - 1) % 12 === 0) fatorReajuste *= (1 + taxaReajuste);
+
+            let saldoIni = saldoInv;
+            let rend = saldoIni * rendMes;
             
-            <div class="form-group full-width">
-                <label id="labelRendimentoExtra">Rendimento Mensal do Automóvel (R$)</label>
-                <input type="number" id="rendimentoCarro" value="0">
-                <span class="explanation" id="explRendimentoExtra">Válido a partir do mês seguinte à contemplação.</span>
-            </div>
+            let pagParc = 0;
+            let pagLance = 0;
+            let entraRenda = 0;
+            let classeRow = "";
 
-            <div class="disclaimer-box">
-                ⚠️ Valores estimados para simulação. O reajuste real depende do índice oficial (INCC/IPCA) aplicado pela administradora na data de aniversário do grupo.
-            </div>
+            if (i <= mesCont) {
+                pagParc = parcAntes;
+                if (i === mesCont) {
+                    classeRow = "contemplacao-row";
+                    pagLance = lanceLiv;
+                }
+            } else {
+                pagParc = parcApos;
+                entraRenda = rendCarro;
+            }
 
-            <button class="calc-btn" onclick="calcular()">CALCULAR SIMULAÇÃO</button>
-        </div>
-    </div>
+            // Aplica Reajuste na Parcela
+            let parcReajustada = pagParc * fatorReajuste;
+            totalPagoReal += parcReajustada + pagLance;
 
-    <!-- Coluna da Direita: Resultados -->
-    <div class="card" id="resultados">
-        <h2>Resultados Financeiros</h2>
+            saldoInv = saldoIni + rend + entraRenda - parcReajustada - pagLance;
+
+            if (i === mesCont) saldoContemplacao = saldoInv;
+
+            // Formatação Tabela
+            let displayLance = pagLance > 0 ? formatarMoeda(pagLance) : "-";
+            let displayRenda = entraRenda > 0 ? formatarMoeda(entraRenda) : "-";
+            let avisoIncc = (i > 1 && (i-1)%12 === 0) ? "<small style='color:#e67e22'> (INCC)</small>" : "";
+
+            html += `
+                <tr class="${classeRow}">
+                    <td>${i}${avisoIncc}</td>
+                    <td>${formatarMoeda(saldoIni)}</td>
+                    <td style="color:green">+ ${formatarMoeda(rend)}</td>
+                    <td style="${entraRenda>0?'color:green':''}">${entraRenda>0?'+':''} ${displayRenda}</td>
+                    <td style="color:#c0392b">- ${formatarMoeda(parcReajustada)}</td>
+                    <td style="color:#c0392b; font-weight:${pagLance>0?'bold':'normal'}">${pagLance>0?'-':''} ${displayLance}</td>
+                    <td style="font-weight:bold; color:${saldoInv<0?'#c0392b':'#2c3e50'}">${formatarMoeda(saldoInv)}</td>
+                </tr>
+            `;
+        }
+
+        // Output
+        document.getElementById('resValorLiberado').innerText = formatarMoeda(valLiberado);
+        document.getElementById('resPrestacaoNormal').innerText = formatarMoeda(parcCheia);
+        document.getElementById('resPrestacaoAntes').innerText = formatarMoeda(parcAntes);
+        document.getElementById('resPrestacaoApos').innerText = formatarMoeda(parcApos);
+        document.getElementById('resTotalLances').innerText = formatarMoeda(totalLances);
+        document.getElementById('resTotalPago').innerText = formatarMoeda(totalPagoReal);
         
-        <div class="result-item">
-            <div>
-                <span class="result-label">Valor Líquido Liberado</span>
-                <span class="explanation">Carta de crédito (-) Lance Embutido</span>
-            </div>
-            <span class="result-value highlight-green" id="resValorLiberado">R$ 0,00</span>
-        </div>
+        const elSaldo = document.getElementById('resValorAplicacao');
+        elSaldo.innerText = formatarMoeda(saldoContemplacao);
+        elSaldo.style.color = saldoContemplacao < 0 ? "#c0392b" : "#2c3e50";
 
-        <div class="result-item">
-            <div>
-                <span class="result-label">Prestação Mensal Inicial</span>
-                <span class="explanation">Valor base (sem reajuste anual)</span>
-            </div>
-            <span class="result-value reference-val" id="resPrestacaoNormal">R$ 0,00</span>
-        </div>
+        document.querySelector('#tabelaEvolucao tbody').innerHTML = html;
+    }
 
-        <div class="result-item">
-            <div>
-                <span class="result-label">Prestação (Até Contemplação)</span>
-                <span class="explanation">Com desconto inicial aplicado</span>
-            </div>
-            <span class="result-value" id="resPrestacaoAntes">R$ 0,00</span>
-        </div>
+    // Init
+    atualizarDadosEntrada();
+    calcular();
 
-        <div class="result-item">
-            <div>
-                <span class="result-label">Prestação (Pós Contemplação)</span>
-                <span class="explanation">Recalculada após amortização</span>
-            </div>
-            <span class="result-value highlight-blue" id="resPrestacaoApos">R$ 0,00</span>
-        </div>
+</script>
 
-        <div class="result-item">
-            <div>
-                <span class="result-label">Total Pago (Estimado)</span>
-                <span class="explanation">Soma de todas parcelas e lances</span>
-            </div>
-            <span class="result-value" id="resTotalPago">R$ 0,00</span>
-        </div>
-
-        <hr style="border: 0; border-top: 1px dashed #ddd; margin: 20px 0;">
-
-        <div class="result-item">
-            <div>
-                <span class="result-label">Saldo da Aplicação (na Contemplação)</span>
-                <span class="explanation">Saldo exato após pagamento do Lance Livre</span>
-            </div>
-            <span class="result-value" id="resValorAplicacao">R$ 0,00</span>
-        </div>
-    </div>
-
-    <!-- Grid de Evolução -->
-    <div class="card full-width-card">
-        <h2>Evolução Mensal (Fluxo de Caixa)</h2>
-        <p class="explanation" style="margin-bottom: 15px;">
-            Acompanhe a evolução. A parcela sofre <strong>reajuste anual</strong>. O Lance Livre é deduzido na contemplação.
-        </p>
-        
-        <div class="table-container">
-            <table id="tabelaEvolucao">
-                <thead>
-                    <tr>
-                        <th>Mês</th>
-                        <th>Saldo Inicial</th>
-                        <th>Rend. Aplic. (+)</th>
-                        <th id="thRendaExtra">Rend. Carro (+)</th>
-                        <th>Pag. Parcela (-)</th>
-                        <th>Lance Livre (-)</th>
-                        <th>Saldo Final</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- JS preenche aqui -->
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-<script src="script.js"></script>
 </body>
 </html>
