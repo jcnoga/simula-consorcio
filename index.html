@@ -119,9 +119,10 @@
         }
         
         h1 { color: var(--text-muted); font-weight: 300; margin-bottom: 25px; text-align: center; }
-        .type-selector { margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+        .type-selector { margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; align-items: center; }
         .type-btn { background: #e0e0e0; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; color: #555; font-weight: 600; transition: 0.3s; }
         .type-btn.active { background-color: var(--primary); color: white; }
+        .info-icon { font-size: 1.1rem; color: var(--primary); cursor: pointer; font-weight: bold; margin-left: -5px; }
         
         .grid-container { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: start; }
         .card { background: var(--bg-card); padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
@@ -164,7 +165,38 @@
         .contemplacao-row { background-color: var(--info-bg) !important; border-left: 4px solid #ffc107; font-weight: bold; }
         .comparison-section { background-color: #eaf6ff; padding: 15px; border-radius: 6px; margin-top: 20px; }
         .comparison-section h3 { margin-top: 0; color: var(--primary); font-size: 1rem; }
-        .projection-section { background-color: #f_af9f_c; padding: 15px; border-radius: 6px; margin-top: 20px; border: 1px solid #e0e0e0; }
+        .projection-section { background-color: #fafafa; padding: 15px; border-radius: 6px; margin-top: 20px; border: 1px solid #e0e0e0; }
+
+        /* --- ESTILOS DO MODAL DE INFORMAÇÃO --- */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background-color: #fff;
+            margin: auto;
+            padding: 25px 30px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 650px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            animation: slide-down 0.3s ease-out;
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px; }
+        .modal-header h3 { margin: 0; color: var(--primary); }
+        .modal-body p { line-height: 1.6; font-size: 0.95rem; }
+        .modal-body strong { color: var(--primary); }
+        .close-btn { color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close-btn:hover { color: #000; }
+        @keyframes slide-down { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
         @media (max-width: 768px) {
             .grid-container { grid-template-columns: 1fr; }
@@ -173,7 +205,6 @@
     </style>
 </head>
 <body>
-
     <!-- CONTAINER DE AUTENTICAÇÃO -->
     <div id="auth-container">
         <div class="auth-card" id="login-card"><h2>Acesso ao Simulador</h2><div id="login-error" class="error-message"></div><input type="email" id="login-email" class="auth-input" placeholder="Seu e-mail"><input type="password" id="login-password" class="auth-input" placeholder="Sua senha"><button class="auth-btn" id="btn-login">ENTRAR</button><span class="auth-link" id="link-to-register">Não tem conta? Cadastre-se</span><span class="auth-link" id="link-to-reset" style="font-size: 0.8rem; color: #7f8c8d;">Esqueci minha senha</span></div>
@@ -183,23 +214,22 @@
 
     <!-- CONTAINER DO APLICATIVO (SIMULADOR) -->
     <div id="app-container">
-        <div class="header-bar">
-            <h1>Simulador Financeiro Avançado</h1>
-            <button class="logout-btn" id="btn-logout">Sair</button>
-        </div>
+        <div class="header-bar"><h1>Simulador Financeiro Avançado</h1><button class="logout-btn" id="btn-logout">Sair</button></div>
 
         <div class="type-selector">
             <button class="type-btn active" onclick="setSimulationType('consorcio_veiculo')">Cons. Veículos</button>
+            <span class="info-icon" onclick="showInfo('consorcio_veiculo')">ⓘ</span>
             <button class="type-btn" onclick="setSimulationType('consorcio_imovel')">Cons. Imóveis</button>
+            <span class="info-icon" onclick="showInfo('consorcio_imovel')">ⓘ</span>
             <button class="type-btn" onclick="setSimulationType('consorcio_equipamento')">Cons. Equipamentos</button>
+            <span class="info-icon" onclick="showInfo('consorcio_equipamento')">ⓘ</span>
             <button class="type-btn" onclick="setSimulationType('financiamento_cdb')">Financiamento Garantia CDB</button>
+            <span class="info-icon" onclick="showInfo('financiamento_cdb')">ⓘ</span>
         </div>
 
         <div class="grid-container">
-            <!-- Coluna Inputs -->
             <div class="card">
                 <h2 id="tituloParametros">PARÂMETROS DA SIMULAÇÃO</h2>
-                
                 <div id="consorcio-inputs">
                     <div class="form-grid">
                         <div class="form-group"><label>Aplicação Inicial (R$)</label><input type="number" id="valorAplicado" value="35000"></div>
@@ -218,7 +248,6 @@
                         <button class="calc-btn" onclick="calcularConsorcio()">CALCULAR CONSÓRCIO</button>
                     </div>
                 </div>
-
                 <div id="financiamento-inputs" style="display: none;">
                      <div class="form-grid">
                         <div class="form-group full-width"><label>Valor do Bem (R$)</label><input type="number" id="fin-valor-veiculo" value="60000"></div>
@@ -236,10 +265,8 @@
                 </div>
             </div>
 
-            <!-- Coluna Resultados -->
             <div class="card">
                 <h2 id="tituloResultados">RESULTADOS</h2>
-
                 <div id="consorcio-results">
                     <div class="result-row"><div class="res-label-group"><span class="res-label">Líquido Liberado</span></div><span class="res-value text-green" id="resValorLiberado">R$ 0,00</span></div>
                     <div class="result-row"><div class="res-label-group"><span class="res-label">Parcela Cheia</span></div><span class="res-value" style="color:#7f8c8d;" id="resPrestacaoNormal">R$ 0,00</span></div>
@@ -250,20 +277,17 @@
                     <hr class="dashed-separator">
                     <div class="result-row"><div class="res-label-group"><span class="res-label" style="font-weight:bold;">Saldo na Contemplação</span></div><span class="res-value" id="resValorAplicacao">R$ 0,00</span></div>
                 </div>
-
                 <div id="financiamento-results" style="display:none;">
                     <div class="result-row"><div class="res-label-group"><span class="res-label">Valor Financiado</span><span class="res-desc">Bem - Garantia (CDB)</span></div><span class="res-value text-blue" id="res-fin-valor-financiado">R$ 0,00</span></div>
                     <div class="result-row"><div class="res-label-group"><span class="res-label">Parcela Fixa (com Garantia)</span><span class="res-desc" id="res-fin-desc-taxa-garantia">Taxa de 1.59% a.m.</span></div><span class="res-value" id="res-fin-parcela-garantia">R$ 0,00</span></div>
                     <div class="result-row"><div class="res-label-group"><span class="res-label">Rendimento Médio Mensal (CDB+Bem)</span><span class="res-desc">Geração de caixa mensal estimada</span></div><span class="res-value" style="color: #27ae60;" id="res-fin-rendimento-total">R$ 0,00</span></div>
                     <div class="result-row"><div class="res-label-group"><span class="res-label" style="font-weight:bold;">Parcela Líquida Média</span><span class="res-desc" id="res-fin-parcela-liquida-desc">Parcela - Rendimento Total</span></div><span class="res-value text-green" id="res-fin-parcela-liquida">R$ 0,00</span></div>
                     <hr class="dashed-separator">
-
                     <div class="projection-section">
                         <h3 style="margin-top: 0; color: var(--primary); font-size: 1rem; margin-bottom: 15px;">Projeção Saldo Final do CDB</h3>
                         <div class="result-row"><div class="res-label-group"><span class="res-label">Com Abatimento nas Parcelas</span><span class="res-desc">Rendimento do CDB é usado no pagamento.</span></div><span class="res-value text-blue" id="res-fin-saldo-cdb-com-abatimento">R$ 0,00</span></div>
                         <div class="result-row"><div class="res-label-group"><span class="res-label">Sem Abatimento (Reinvestido)</span><span class="res-desc">Rendimento do CDB é 100% reinvestido.</span></div><span class="res-value text-green" id="res-fin-saldo-cdb-sem-abatimento">R$ 0,00</span></div>
                     </div>
-                    
                     <div class="comparison-section">
                         <h3>Comparativo (Financiamento Padrão)</h3>
                         <div class="result-row"><div class="res-label-group"><span class="res-label">Parcela Mensal (sem Garantia)</span><span class="res-desc" id="res-fin-desc-taxa-normal">Taxa de 1.94% a.m.</span></div><span class="res-value text-red" id="res-fin-parcela-normal">R$ 0,00</span></div>
@@ -281,7 +305,6 @@
                     </table>
                 </div>
             </div>
-
              <div class="card full-width" id="financiamento-table-card" style="display: none;">
                 <h2>EVOLUÇÃO DO FINANCIAMENTO E CDB</h2>
                 <div class="table-container">
@@ -294,19 +317,24 @@
         </div>
     </div>
 
+    <!-- MODAL DE INFORMAÇÃO -->
+    <div id="info-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Título da Informação</h3>
+                <span class="close-btn">&times;</span>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <p>Conteúdo da explicação aparecerá aqui.</p>
+            </div>
+        </div>
+    </div>
+
     <!-- --- FIREBASE & APP SCRIPTS --- -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        const firebaseConfig = {
-            apiKey: "AIzaSyAF0czNY5fMmLWN5J95asCuEmeU3yyPYO0",
-            authDomain: "consorcio-86c07.firebaseapp.com",
-            projectId: "consorcio-86c07",
-            storageBucket: "consorcio-86c07.firebasestorage.app",
-            messagingSenderId: "153431493199",
-            appId: "1:153431493199:web:73f85c87fcfa193434383a",
-            measurementId: "G-Q3DRJ1SN4L"
-        };
+        const firebaseConfig = { apiKey: "AIzaSyAF0czNY5fMmLWN5J95asCuEmeU3yyPYO0", authDomain: "consorcio-86c07.firebaseapp.com", projectId: "consorcio-86c07", storageBucket: "consorcio-86c07.firebasestorage.app", messagingSenderId: "153431493199", appId: "1:153431493199:web:73f85c87fcfa193434383a", measurementId: "G-Q3DRJ1SN4L" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const authContainer = document.getElementById('auth-container');
@@ -326,9 +354,7 @@
             }
         });
         function showCard(cardName) {
-            loginCard.style.display = 'none';
-            registerCard.style.display = 'none';
-            resetCard.style.display = 'none';
+            loginCard.style.display = 'none'; registerCard.style.display = 'none'; resetCard.style.display = 'none';
             document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
             if(cardName === 'login') loginCard.style.display = 'block';
             if(cardName === 'register') registerCard.style.display = 'block';
@@ -338,45 +364,11 @@
         document.getElementById('link-to-login').onclick = () => showCard('login');
         document.getElementById('link-back-login').onclick = () => showCard('login');
         document.getElementById('link-to-reset').onclick = () => showCard('reset');
-        document.getElementById('btn-login').onclick = () => {
-            const email = document.getElementById('login-email').value;
-            const pass = document.getElementById('login-password').value;
-            signInWithEmailAndPassword(auth, email, pass).catch((error) => {
-                const el = document.getElementById('login-error');
-                el.innerText = "Erro: " + error.message;
-                el.style.display = 'block';
-            });
-        };
-        document.getElementById('btn-register').onclick = () => {
-            const email = document.getElementById('reg-email').value;
-            const pass = document.getElementById('reg-password').value;
-            createUserWithEmailAndPassword(auth, email, pass)
-                .then(() => alert("Conta criada com sucesso!"))
-                .catch((error) => {
-                    const el = document.getElementById('register-error');
-                    el.innerText = error.message;
-                    el.style.display = 'block';
-                });
-        };
-        document.getElementById('btn-reset').onclick = () => {
-            const email = document.getElementById('reset-email').value;
-            sendPasswordResetEmail(auth, email)
-                .then(() => {
-                    const el = document.getElementById('reset-msg');
-                    el.innerText = "Email de recuperação enviado!";
-                    el.style.display = 'block';
-                    el.style.color = 'green';
-                }).catch((error) => {
-                    const el = document.getElementById('reset-msg');
-                    el.innerText = error.message;
-                    el.style.display = 'block';
-                    el.style.color = 'red';
-                });
-        };
+        document.getElementById('btn-login').onclick = () => { signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value).catch((error) => { const el = document.getElementById('login-error'); el.innerText = "Erro: " + error.message; el.style.display = 'block'; }); };
+        document.getElementById('btn-register').onclick = () => { createUserWithEmailAndPassword(auth, document.getElementById('reg-email').value, document.getElementById('reg-password').value).then(() => alert("Conta criada com sucesso!")).catch((error) => { const el = document.getElementById('register-error'); el.innerText = error.message; el.style.display = 'block'; }); };
+        document.getElementById('btn-reset').onclick = () => { sendPasswordResetEmail(auth, document.getElementById('reset-email').value).then(() => { const el = document.getElementById('reset-msg'); el.innerText = "Email de recuperação enviado!"; el.style.display = 'block'; el.style.color = 'green'; }).catch((error) => { const el = document.getElementById('reset-msg'); el.innerText = error.message; el.style.display = 'block'; el.style.color = 'red'; }); };
         document.getElementById('btn-logout').onclick = () => signOut(auth);
     </script>
-
-    <!-- --- LÓGICA DOS SIMULADORES (JAVASCRIPT GLOBAL) --- -->
     <script>
         const CONFIGS = {
             consorcio_veiculo: { titulo: "PARÂMETROS (CONS. VEÍCULOS)", carta: 75000, taxa: 23.4, prazo: 76, rendLabel: "Rend. Extra (R$)", expl: "Após contemplação", th: "EXTRA (+)", desc: 30, reaj: 6.0 },
@@ -384,32 +376,25 @@
             consorcio_equipamento: { titulo: "PARÂMETROS (CONS. EQUIPAMENTOS)", carta: 150000, taxa: 18.0, prazo: 60, rendLabel: "Lucro (R$)", expl: "Retorno produtivo", th: "LUCRO (+)", desc: 0, reaj: 5.0 },
             financiamento_cdb: { titulo: "PARÂMETROS (FINANC. GARANTIA CDB)" }
         };
-
         const formatarMoeda = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         const getFloat = (id) => parseFloat(document.getElementById(id).value.replace(',', '.')) || 0;
         const getInt = (id) => parseInt(document.getElementById(id).value) || 0;
         const getValue = (id) => document.getElementById(id).value;
         const getChecked = (id) => document.getElementById(id).checked;
-
         function setSimulationType(type) {
             document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
             const clickedButton = Array.from(document.querySelectorAll('.type-btn')).find(b => b.getAttribute('onclick') === `setSimulationType('${type}')`);
             if (clickedButton) clickedButton.classList.add('active');
-
             const isConsorcio = type.startsWith('consorcio');
-            
             document.getElementById('consorcio-inputs').style.display = isConsorcio ? 'block' : 'none';
             document.getElementById('consorcio-results').style.display = isConsorcio ? 'block' : 'none';
             document.getElementById('consorcio-table-card').style.display = isConsorcio ? 'block' : 'none';
-
             document.getElementById('financiamento-inputs').style.display = !isConsorcio ? 'block' : 'none';
             document.getElementById('financiamento-results').style.display = !isConsorcio ? 'block' : 'none';
             document.getElementById('financiamento-table-card').style.display = !isConsorcio ? 'block' : 'none';
-
             const c = CONFIGS[type];
             document.getElementById('tituloParametros').innerText = c.titulo;
             document.getElementById('tituloResultados').innerText = isConsorcio ? "RESULTADOS DO CONSÓRCIO" : "RESULTADOS DO FINANCIAMENTO";
-
             if (isConsorcio) {
                 document.getElementById('labelRendimentoExtra').innerText = c.rendLabel;
                 document.getElementById('explRendimentoExtra').innerText = c.expl;
@@ -425,7 +410,6 @@
                 calcularFinanciamento();
             }
         }
-
         window.toggleAutoLance = function() {
             const chk = document.getElementById('chkAutoLance');
             const livre = document.getElementById('lanceLivre');
@@ -434,13 +418,11 @@
             target.disabled = !chk.checked;
             if (chk.checked) atualizarDadosEntrada();
         }
-
         window.atualizarDadosEntrada = function() {
             const carta = getFloat('valorCarta');
             const pctEmb = getFloat('pctLanceEmbutido');
             const valEmb = carta * (pctEmb/100);
             document.getElementById('valorLanceEmbutidoDisplay').value = formatarMoeda(valEmb);
-            
             if (document.getElementById('chkAutoLance').checked) {
                 const meta = getFloat('targetPercent');
                 const valMeta = carta * (meta/100);
@@ -448,7 +430,6 @@
                 document.getElementById('lanceLivre').value = valLivre.toFixed(0);
             }
         }
-
         window.calcularConsorcio = function() {
             const valApp = getFloat('valorAplicado');
             const rendMes = getFloat('rendimentoMensal')/100;
@@ -461,28 +442,19 @@
             const pctEmb = getFloat('pctLanceEmbutido');
             const extra = getFloat('rendimentoCarro');
             const reaj = getFloat('taxaReajuste')/100;
-
             if (mesCont <= 0 || prazo <= 0 || mesCont > prazo) return;
-
             const divTotal = carta * (1 + (taxa/100));
             const parcCheia = divTotal/prazo;
             const parcAntes = parcCheia * (1 - (desc/100));
             const valEmb = carta * (pctEmb/100);
             const totalLance = livre + valEmb;
             const lib = carta - valEmb;
-
             const pagoAteCont = parcAntes * (mesCont - 1);
             const sDevedor = divTotal - pagoAteCont - parcAntes;
             const sPosLance = Math.max(0, sDevedor - totalLance);
             const mesesRest = prazo - mesCont;
             const parcApos = mesesRest > 0 ? sPosLance / mesesRest : 0;
-
-            let saldo = valApp;
-            let html = "";
-            let saldoCont = 0;
-            let totalPago = 0;
-            let fatorReaj = 1;
-
+            let saldo = valApp; let html = ""; let saldoCont = 0; let totalPago = 0; let fatorReaj = 1;
             for(let i=1; i<=prazo; i++) {
                 if(i > 1 && (i - 1) % 12 === 0) fatorReaj *= (1 + reaj);
                 let sIni = saldo;
@@ -491,18 +463,12 @@
                 let pLance = (i === mesCont) ? livre : 0;
                 let pExtra = (i > mesCont) ? extra : 0;
                 let cls = (i === mesCont) ? "contemplacao-row" : "";
-                
                 let pParcReaj = pParc * fatorReaj;
                 totalPago += pParcReaj + pLance;
                 saldo = sIni + rApp + pExtra - pParcReaj - pLance;
                 if(i === mesCont) saldoCont = saldo;
-
-                html += `<tr class="${cls}"><td>${i}</td><td>${formatarMoeda(sIni)}</td><td style="color:green">+${formatarMoeda(rApp)}</td>
-                <td>${pExtra > 0 ? '+' + formatarMoeda(pExtra) : '-'}</td><td style="color:#c0392b">-${formatarMoeda(pParcReaj)}</td>
-                <td style="color:#c0392b">${pLance > 0 ? '-' + formatarMoeda(pLance) : '-'}</td>
-                <td style="font-weight:bold;color:${saldo < 0 ? '#c0392b' : '#2c3e50'}">${formatarMoeda(saldo)}</td></tr>`;
+                html += `<tr class="${cls}"><td>${i}</td><td>${formatarMoeda(sIni)}</td><td style="color:green">+${formatarMoeda(rApp)}</td><td>${pExtra > 0 ? '+' + formatarMoeda(pExtra) : '-'}</td><td style="color:#c0392b">-${formatarMoeda(pParcReaj)}</td><td style="color:#c0392b">${pLance > 0 ? '-' + formatarMoeda(pLance) : '-'}</td><td style="font-weight:bold;color:${saldo < 0 ? '#c0392b' : '#2c3e50'}">${formatarMoeda(saldo)}</td></tr>`;
             }
-
             document.getElementById('resValorLiberado').innerText = formatarMoeda(lib);
             document.getElementById('resPrestacaoNormal').innerText = formatarMoeda(parcCheia);
             document.getElementById('resPrestacaoAntes').innerText = formatarMoeda(parcAntes);
@@ -514,84 +480,33 @@
             elSaldo.style.color = saldoCont < 0 ? "#c0392b" : "#2c3e50";
             document.querySelector('#tabelaEvolucao tbody').innerHTML = html;
         }
-
-        // --- LÓGICA FINANCIAMENTO ---
         function calcularFinanciamento() {
-            const valorVeiculo = getFloat('fin-valor-veiculo');
-            const valorCDB = getFloat('fin-valor-cdb');
-            const prazoAnos = getInt('fin-prazo-anos');
-            const taxaGarantia = getFloat('fin-taxa-garantia') / 100;
-            const taxaNormal = getFloat('fin-taxa-normal') / 100;
-            const pctRendimentoCDB = getFloat('fin-rendimento-cdb') / 100;
-            const taxaCDIAnual = getFloat('fin-taxa-cdi') / 100;
-            const rendimentoBem = getFloat('fin-rendimento-bem');
-            const tipoRendimento = getValue('fin-tipo-rendimento');
-            const abaterParcelas = getChecked('fin-abater-parcelas');
-
-            const valorFinanciado = Math.max(0, valorVeiculo - valorCDB);
-            const prazoMeses = prazoAnos * 12;
-
+            const valorVeiculo = getFloat('fin-valor-veiculo'); const valorCDB = getFloat('fin-valor-cdb'); const prazoAnos = getInt('fin-prazo-anos'); const taxaGarantia = getFloat('fin-taxa-garantia') / 100; const taxaNormal = getFloat('fin-taxa-normal') / 100; const pctRendimentoCDB = getFloat('fin-rendimento-cdb') / 100; const taxaCDIAnual = getFloat('fin-taxa-cdi') / 100; const rendimentoBem = getFloat('fin-rendimento-bem'); const tipoRendimento = getValue('fin-tipo-rendimento'); const abaterParcelas = getChecked('fin-abater-parcelas');
+            const valorFinanciado = Math.max(0, valorVeiculo - valorCDB); const prazoMeses = prazoAnos * 12;
             if (prazoMeses <= 0 || valorFinanciado < 0) return;
-
             const calcularParcela = (valor, taxa, prazo) => (taxa === 0) ? valor / prazo : valor * (taxa * Math.pow(1 + taxa, prazo)) / (Math.pow(1 + taxa, prazo) - 1);
-            
             const taxaCDIMensal = Math.pow(1 + taxaCDIAnual, 1/12) - 1;
-            const DIAS_UTEIS_MES = 21; // Média de dias úteis por mês
-            const taxaCDIDiariaUtil = Math.pow(1 + taxaCDIAnual, 1/252) - 1; // 252 dias úteis no ano
-
-            const getRendimentoMes = (saldoAtual) => {
-                 switch (tipoRendimento) {
-                    case 'diario': return saldoAtual * (Math.pow(1 + taxaCDIDiariaUtil * pctRendimentoCDB, DIAS_UTEIS_MES) - 1);
-                    default: return saldoAtual * taxaCDIMensal * pctRendimentoCDB;
-                }
-            };
-            
-            // --- Simulação Cenário 2: Reinvestimento total para projeção ---
+            const DIAS_UTEIS_MES = 21; const taxaCDIDiariaUtil = Math.pow(1 + taxaCDIAnual, 1/252) - 1;
+            const getRendimentoMes = (saldoAtual) => { switch (tipoRendimento) { case 'diario': return saldoAtual * (Math.pow(1 + taxaCDIDiariaUtil * pctRendimentoCDB, DIAS_UTEIS_MES) - 1); default: return saldoAtual * taxaCDIMensal * pctRendimentoCDB; } };
             let saldoCDB_CenarioReinvestimento = valorCDB;
-            for(let i = 1; i <= prazoMeses; i++) {
-                const rendimentoDoMes = getRendimentoMes(saldoCDB_CenarioReinvestimento);
-                saldoCDB_CenarioReinvestimento += rendimentoDoMes;
-            }
+            for(let i = 1; i <= prazoMeses; i++) { const rendimentoDoMes = getRendimentoMes(saldoCDB_CenarioReinvestimento); saldoCDB_CenarioReinvestimento += rendimentoDoMes; }
             document.getElementById('res-fin-saldo-cdb-sem-abatimento').innerText = formatarMoeda(saldoCDB_CenarioReinvestimento);
             document.getElementById('res-fin-saldo-cdb-com-abatimento').innerText = formatarMoeda(valorCDB);
-
-
-            // --- Simulação para a tabela e resultados principais, respeitando a escolha do usuário ---
             const parcelaGarantia = valorFinanciado > 0 ? calcularParcela(valorFinanciado, taxaGarantia, prazoMeses) : 0;
-            let saldoDevedor = valorFinanciado;
-            let saldoCDB = valorCDB;
-            let totalRendimentoGerado = 0;
-            let html = "";
-
+            let saldoDevedor = valorFinanciado; let saldoCDB = valorCDB; let totalRendimentoGerado = 0; let html = "";
             for(let i = 1; i <= prazoMeses; i++) {
                 const rendimentoMesCDB = getRendimentoMes(saldoCDB);
                 totalRendimentoGerado += rendimentoMesCDB + rendimentoBem;
-                
-                if (!abaterParcelas) {
-                    saldoCDB += rendimentoMesCDB; // Reinveste se não for abater
-                }
-
-                const jurosMes = saldoDevedor * taxaGarantia;
-                const amortizacao = parcelaGarantia - jurosMes;
-                saldoDevedor -= amortizacao;
-                
-                html += `<tr>
-                    <td>${i}</td><td>${formatarMoeda(parcelaGarantia)}</td><td style="color:#c0392b">-${formatarMoeda(jurosMes)}</td>
-                    <td>-${formatarMoeda(amortizacao)}</td><td style="color:green">+${formatarMoeda(rendimentoMesCDB)}</td>
-                    <td style="font-weight:bold;">${formatarMoeda(Math.max(0, saldoDevedor))}</td><td style="font-weight:bold;">${formatarMoeda(saldoCDB)}</td>
-                </tr>`;
+                if (!abaterParcelas) { saldoCDB += rendimentoMesCDB; }
+                const jurosMes = saldoDevedor * taxaGarantia; const amortizacao = parcelaGarantia - jurosMes; saldoDevedor -= amortizacao;
+                html += `<tr><td>${i}</td><td>${formatarMoeda(parcelaGarantia)}</td><td style="color:#c0392b">-${formatarMoeda(jurosMes)}</td><td>-${formatarMoeda(amortizacao)}</td><td style="color:green">+${formatarMoeda(rendimentoMesCDB)}</td><td style="font-weight:bold;">${formatarMoeda(Math.max(0, saldoDevedor))}</td><td style="font-weight:bold;">${formatarMoeda(saldoCDB)}</td></tr>`;
             }
             document.querySelector('#tabelaFinanciamento tbody').innerHTML = html;
-
-            // --- Atualiza Cartão de Resultados ---
             const mediaRendimentoTotal = prazoMeses > 0 ? totalRendimentoGerado / prazoMeses : 0;
             const parcelaLiquida = parcelaGarantia - (abaterParcelas ? mediaRendimentoTotal : 0);
-            
             document.getElementById('res-fin-parcela-liquida-desc').innerText = abaterParcelas ? "Parcela - Rendimento Total" : "Não há abatimento";
-            
             const parcelaNormal = calcularParcela(valorFinanciado, taxaNormal, prazoMeses);
             const economia = (parcelaNormal * prazoMeses) - (parcelaGarantia * prazoMeses);
-
             document.getElementById('res-fin-valor-financiado').innerText = formatarMoeda(valorFinanciado);
             document.getElementById('res-fin-parcela-garantia').innerText = formatarMoeda(parcelaGarantia);
             document.getElementById('res-fin-desc-taxa-garantia').innerText = `Taxa de ${(taxaGarantia * 100).toFixed(2)}% a.m.`;
@@ -601,10 +516,53 @@
             document.getElementById('res-fin-desc-taxa-normal').innerText = `Taxa de ${(taxaNormal * 100).toFixed(2)}% a.m.`;
             document.getElementById('res-fin-economia').innerText = formatarMoeda(economia);
         }
+        
+        // --- LÓGICA DO MODAL ---
+        const modal = document.getElementById('info-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalBody = document.getElementById('modal-body');
+        const closeBtn = document.querySelector('.close-btn');
 
-        document.addEventListener('DOMContentLoaded', () => {
-             // A inicialização agora é feita pelo onAuthStateChanged do Firebase
-        });
+        window.showInfo = function(type) {
+            let title = ""; let content = "";
+            
+            switch(type) {
+                case 'consorcio_veiculo':
+                case 'consorcio_imovel':
+                case 'consorcio_equipamento':
+                    const nomeBem = type.split('_')[1];
+                    title = `Como Funciona o Consórcio de ${nomeBem.charAt(0).toUpperCase() + nomeBem.slice(1)}`;
+                    content = `<p>O consórcio é uma forma de compra planejada em grupo. Veja como suas escolhas impactam a simulação:</p>
+                        <p> • <strong>Valor da Carta:</strong> O valor de <strong>${formatarMoeda(getFloat('valorCarta'))}</strong> é o seu objetivo de crédito para comprar o bem.</p>
+                        <p> • <strong>Prazo e Taxa:</strong> O custo total (carta + taxa de <strong>${getFloat('taxaAdmin')}%</strong>) é dividido pelo prazo de <strong>${getInt('prazoTotal')} meses</strong> para definir a parcela cheia.</p>
+                        <p> • <strong>Contemplação e Lances:</strong> Você simulou ser contemplado no mês <strong>${getInt('mesContemplacao')}</strong>, possivelmente através de um lance total de <strong>${formatarMoeda(getFloat('lanceLivre') + (getFloat('valorCarta') * getFloat('pctLanceEmbutido') / 100))}</strong>. O lance adianta parcelas, reduzindo o saldo devedor e, consequentemente, o valor das parcelas futuras.</p>
+                        <p> • <strong>Aplicação Financeira:</strong> Sua aplicação inicial de <strong>${formatarMoeda(getFloat('valorAplicado'))}</strong>, com rendimento de <strong>${getFloat('rendimentoMensal')}% a.m.</strong>, serve como seu caixa. A tabela "Fluxo de Caixa" mostra como esse dinheiro é usado para pagar as parcelas e o lance, e como seu saldo evolui.</p>
+                        <p> • <strong>Renda Extra:</strong> Após a contemplação, o valor de <strong>${formatarMoeda(getFloat('rendimentoCarro'))}</strong> ajuda a pagar as parcelas restantes, aliviando seu fluxo de caixa mensal.</p>`;
+                    break;
+                case 'financiamento_cdb':
+                    title = 'Como Funciona o Financiamento com Garantia em CDB';
+                    content = `<p>Nesta modalidade, seu investimento em CDB é usado como garantia para obter juros menores no financiamento.</p>
+                        <p> • <strong>Estrutura:</strong> Para um bem de <strong>${formatarMoeda(getFloat('fin-valor-veiculo'))}</strong>, você usa <strong>${formatarMoeda(getFloat('fin-valor-cdb'))}</strong> como garantia. O banco então financia a diferença de <strong>${formatarMoeda(getFloat('fin-valor-veiculo') - getFloat('fin-valor-cdb'))}</strong>.</p>
+                        <p> • <strong>Taxa de Juros:</strong> Graças à garantia, sua taxa é de <strong>${getFloat('fin-taxa-garantia')}% a.m.</strong>, resultando em parcelas fixas durante <strong>${getInt('fin-prazo-anos')} anos</strong>. Sem isso, a taxa seria maior.</p>
+                        <p> • <strong>Rendimento do CDB:</strong> Seu CDB de <strong>${formatarMoeda(getFloat('fin-valor-cdb'))}</strong> rende <strong>${getFloat('fin-rendimento-cdb')}%</strong> do CDI (referência de <strong>${getFloat('fin-taxa-cdi')}% a.a.</strong>). Este rendimento é a chave da operação.</p>
+                        <p> • <strong>Uso do Rendimento:</strong> Você escolheu <strong>${getChecked('fin-abater-parcelas') ? 'USAR' : 'NÃO USAR'}</strong> o rendimento para abater as parcelas.
+                        ${getChecked('fin-abater-parcelas')
+                            ? "Isso significa que o rendimento do CDB + a renda do bem diminuem o valor que você desembolsa por mês (a 'Parcela Líquida'). O saldo principal do seu CDB fica intacto."
+                            : "Isso significa que o rendimento é 100% reinvestido no CDB, fazendo seu patrimônio crescer. A projeção 'Saldo Final do CDB' mostra o potencial desse crescimento, enquanto você paga a parcela cheia do financiamento."}
+                        </p>
+                        <p> • <strong>Tabela de Evolução:</strong> A tabela detalha, mês a mês, o pagamento de juros, a amortização da dívida e como o saldo do seu CDB evolui de acordo com sua escolha.</p>`;
+                    break;
+            }
+
+            modalTitle.innerHTML = title;
+            modalBody.innerHTML = content;
+            modal.style.display = 'flex';
+        }
+
+        closeBtn.onclick = () => { modal.style.display = 'none'; }
+        window.onclick = (event) => { if (event.target == modal) { modal.style.display = 'none'; } }
+
+        document.addEventListener('DOMContentLoaded', () => {});
     </script>
 </body>
 </html>
